@@ -28,3 +28,5 @@ bmi_life_predict = bmi_life_model.predict(x)
 plt.scatter(x,y)
 plt.plot(x,bmi_life_predict)
 plt.show()
+
+#To figure - how do i plot the point <21.07931,laos_life_exp> in a different color on the same scatter plot ?
