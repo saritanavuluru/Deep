@@ -5,6 +5,9 @@ weight1 = 1
 weight2 = 1
 bias = -2
 
+#weights and bias for the logic operator OR can be obtained by either increasing both the weights of the AND operation or 
+#     decreasing the magnitude of the bias - (2,2,-1) / (1,1,-1)
+#weights and bias for the logic operator NOT for the second input only - (0,-1,0.5)
 
 # Inputs and outputs
 test_inputs = [(0, 0), (0, 1), (1, 0), (1, 1)]
