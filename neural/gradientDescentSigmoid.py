@@ -13,6 +13,9 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def sigmoid_prime(x):
+    """
+    Given Sigmoid, calculate sigmoid derivative
+    """
     return x*(1-x)
 
 
@@ -35,33 +38,27 @@ for e in range(epochs):
     for x, y in zip(features.values, targets):
         # Loop through all records, x is the input, y is the target
 
-        # Note: We haven't included the h variable from the previous
-        #       lesson. You can add it if you want, or you can calculate
-        #       the h together with the output
-
-        # TODO: Calculate the output
+        #  Calculate the output
         h = np.dot(x,weights)
         output = sigmoid(h)
 
-        # TODO: Calculate the error
+        #  Calculate the error
         error = y-output
 
-        # TODO: Calculate the error term
+        #  Calculate the error term
         output_gradient = sigmoid_prime(output)
         error_term = error * output_gradient
 
-        # TODO: Calculate the change in weights for this sample
+        #  Calculate the change in weights for this sample
         #       and add it to the total weight change
         
         del_w += learnrate * error_term * x
 
-    # TODO: Update weights using the learning rate and the average change in weights
+    #  Update weights using the learning rate and the average change in weights
     weights += learnrate*del_w/n_records
 
     # Printing out the mean square error on the training set
     
-    #print("INNER e {} ",format(e))
-    #print (weights)
     if e % (epochs / 10) == 0:
         out = sigmoid(np.dot(features, weights))
         loss = np.mean((out - targets) ** 2)
@@ -71,8 +68,7 @@ for e in range(epochs):
             print("Train loss: ", loss)
         last_loss = loss
 
-#print("OUTER e {} ",format(e))
-#print (weights)
+
 # Calculate accuracy on test data
 tes_out = sigmoid(np.dot(features_test, weights))
 predictions = tes_out > 0.5
