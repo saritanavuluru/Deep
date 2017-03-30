@@ -1,5 +1,7 @@
 import numpy as np
 
+#TODO : move sigmoid and derivate to the functions file in tools directory
+
 def sigmoid(x):
     """
     Calculate sigmoid
