@@ -103,20 +103,13 @@ def text_to_ids(source_text, target_text, source_vocab_to_int, target_vocab_to_i
     #print(source_text)
     #print(source_vocab_to_int)
     
-    source_ids, target_ids = ([] for i in range(2))
+    source_id_text= [[source_vocab_to_int[word] for word in sentence.split()] for sentence in source_text.split('\n')]
+    target_id_text = [[target_vocab_to_int[word] for word in sentence.split()] + [target_vocab_to_int['<EOS>']] for sentence in target_text.split('\n')]
     
-    for s in source_text.split('\n'):
-        source_ids.append([source_vocab_to_int[w] for w in s.split()])
-        
-     
-    for s in target_text.split('\n'):
-        # Append <EOS> to target sentences
-        target_ids.append([target_vocab_to_int[w] for w in s.split()] + [target_vocab_to_int['<EOS>']])
-        
-    #print(source_ids)
-    #print(target_ids)
+    #print(source_id_text)
+    #print(target_id_text)
     
-    return source_ids, target_ids
+    return source_id_text, target_id_text
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL THAT IS BELOW THIS LINE
@@ -306,17 +299,18 @@ def decoding_layer_train(encoder_state, dec_cell, dec_embed_input, sequence_leng
     """
     # TODO: Implement Function
     # Training Decoder (simple decoder function)
-    train_decoder_fn_simple = tf.contrib.seq2seq.simple_decoder_fn_train(encoder_state)
+    train_decoder_fn = tf.contrib.seq2seq.simple_decoder_fn_train(encoder_state)
     # Training Predictions
-    train_pred, _, _ = tf.contrib.seq2seq.dynamic_rnn_decoder(
-        dec_cell, train_decoder_fn_simple, dec_embed_input, sequence_length, scope=decoding_scope)
-    # Training Logits
-    # Apply output function 
-    train_logits =  output_fn(train_pred)
     # Apply droput
-    train_logits = tf.nn.dropout(train_logits, keep_prob)
-    return train_logits   
+    dec_cell = tf.contrib.rnn.DropoutWrapper(dec_cell, output_keep_prob = keep_prob)
+    train_pred, _, _ = tf.contrib.seq2seq.dynamic_rnn_decoder(
+        dec_cell, train_decoder_fn, dec_embed_input, sequence_length, scope=decoding_scope)
+    #train_pred = tf.nn.dropout(train_pred, keep_prob)
     
+    # Apply output function
+    train_logits =  output_fn(train_pred)
+    
+    return train_logits
     
 
 """
@@ -429,7 +423,7 @@ def decoding_layer(dec_embed_input, dec_embeddings, encoder_state, vocab_size, s
                                                 dec_embeddings, 
                                                 target_vocab_to_int['<GO>'], 
                                                 target_vocab_to_int['<EOS>'],
-                                                sequence_length - 1, 
+                                                sequence_length, 
                                                 vocab_size, 
                                                 decoding_scope, 
                                                 output_fn, 
@@ -651,16 +645,16 @@ with tf.Session(graph=train_graph) as sess:
     print('Model Trained and Saved')
 ```
 
-    Epoch   0 Batch  199/538 - Train Accuracy:  0.486, Validation Accuracy:  0.536, Loss:  3.179
-    Epoch   0 Batch  399/538 - Train Accuracy:  0.580, Validation Accuracy:  0.612, Loss:  3.067
-    Epoch   1 Batch  199/538 - Train Accuracy:  0.716, Validation Accuracy:  0.723, Loss:  2.884
-    Epoch   1 Batch  399/538 - Train Accuracy:  0.780, Validation Accuracy:  0.803, Loss:  2.737
-    Epoch   2 Batch  199/538 - Train Accuracy:  0.885, Validation Accuracy:  0.909, Loss:  2.666
-    Epoch   2 Batch  399/538 - Train Accuracy:  0.897, Validation Accuracy:  0.900, Loss:  2.602
-    Epoch   3 Batch  199/538 - Train Accuracy:  0.904, Validation Accuracy:  0.921, Loss:  2.620
-    Epoch   3 Batch  399/538 - Train Accuracy:  0.912, Validation Accuracy:  0.928, Loss:  2.644
-    Epoch   4 Batch  199/538 - Train Accuracy:  0.922, Validation Accuracy:  0.918, Loss:  2.619
-    Epoch   4 Batch  399/538 - Train Accuracy:  0.924, Validation Accuracy:  0.938, Loss:  2.671
+    Epoch   0 Batch  199/538 - Train Accuracy:  0.480, Validation Accuracy:  0.543, Loss:  0.957
+    Epoch   0 Batch  399/538 - Train Accuracy:  0.590, Validation Accuracy:  0.622, Loss:  0.642
+    Epoch   1 Batch  199/538 - Train Accuracy:  0.753, Validation Accuracy:  0.742, Loss:  0.337
+    Epoch   1 Batch  399/538 - Train Accuracy:  0.833, Validation Accuracy:  0.829, Loss:  0.219
+    Epoch   2 Batch  199/538 - Train Accuracy:  0.898, Validation Accuracy:  0.905, Loss:  0.111
+    Epoch   2 Batch  399/538 - Train Accuracy:  0.912, Validation Accuracy:  0.920, Loss:  0.086
+    Epoch   3 Batch  199/538 - Train Accuracy:  0.927, Validation Accuracy:  0.931, Loss:  0.058
+    Epoch   3 Batch  399/538 - Train Accuracy:  0.937, Validation Accuracy:  0.939, Loss:  0.048
+    Epoch   4 Batch  199/538 - Train Accuracy:  0.936, Validation Accuracy:  0.941, Loss:  0.043
+    Epoch   4 Batch  399/538 - Train Accuracy:  0.948, Validation Accuracy:  0.942, Loss:  0.036
     Model Trained and Saved
 
 
@@ -765,12 +759,12 @@ print('  French Words: {}'.format([target_int_to_vocab[i] for i in np.argmax(tra
 ```
 
     Input
-      Word Ids:      [144, 142, 16, 107, 175, 39, 108]
+      Word Ids:      [134, 197, 175, 166, 147, 18, 186]
       English Words: ['he', 'saw', 'a', 'old', 'yellow', 'truck', '.']
     
     Prediction
-      Word Ids:      [157, 98, 140, 298, 280, 1]
-      French Words: ['il', 'a', 'vu', 'un', 'vieux', '<EOS>']
+      Word Ids:      [299, 73, 190, 39, 312, 338, 1]
+      French Words: ['il', 'a', 'vu', 'un', 'jaune', '.', '<EOS>']
 
 
 ## Imperfect Translation
